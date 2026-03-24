@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -45,14 +46,21 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Get the image data from the form
-	fileData, fileHeaders, err := r.FormFile("thumbnail")
+	fileData, fileHeader, err := r.FormFile("thumbnail")
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Couldn't obtain thumbnail data", err)
 		return
 	}
 
 	// Get media subtype
-	mediaType := fileHeaders.Header.Get("Content-Type")
+	mediaType, _, err := mime.ParseMediaType(fileHeader.Header.Get("Content-Type"))
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Couldn't obtain content type", err)
+		return
+	} else if mediaType != "image/jpeg" && mediaType != "image/png" {
+		respondWithError(w, http.StatusBadRequest, "Wrong content type", err)
+		return
+	}
 	mediaSubtype := strings.Split(mediaType, "/")[1]
 
 	// create a file with unique file path
