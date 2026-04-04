@@ -251,6 +251,8 @@ async function getVideo(videoID) {
 let currentVideo = null;
 
 function viewVideo(video) {
+  console.log("viewVideo called with:", video);
+
   currentVideo = video;
   document.getElementById('video-display').style.display = 'block';
   document.getElementById('video-title-display').textContent = video.title;
@@ -262,6 +264,7 @@ function viewVideo(video) {
   } else {
     thumbnailImg.style.display = 'block';
     thumbnailImg.src = video.thumbnail_url;
+    console.log(video.thumbnail_url);
   }
 
   const videoPlayer = document.getElementById('video-player');
