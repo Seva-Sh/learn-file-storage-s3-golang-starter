@@ -101,6 +101,22 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// process video for fast start
+	processedFilePath, err := processVideoForFastStart(tempFile.Name())
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Couldn't process video for fast start", err)
+		return
+	}
+	defer os.Remove(processedFilePath)
+
+	// open the processed file
+	processedFile, err := os.Open(processedFilePath)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Couldn't open processed file path", err)
+		return
+	}
+	defer processedFile.Close()
+
 	var directory string
 	switch aspectRatio {
 	case "16:9":
@@ -124,7 +140,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	_, err = cfg.s3Client.PutObject(r.Context(), &s3.PutObjectInput{
 		Bucket:      &cfg.s3Bucket,
 		Key:         &filename,
-		Body:        tempFile,
+		Body:        processedFile,
 		ContentType: &videoType,
 	})
 	if err != nil {
