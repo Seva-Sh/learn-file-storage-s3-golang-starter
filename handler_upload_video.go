@@ -149,7 +149,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	}
 
 	// build the string and update the video url and video in the database
-	videoStr := cfg.s3Bucket + "," + filename
+	videoStr := "https://" + cfg.s3CfDistribution + "/" + filename
 	video.VideoURL = &videoStr
 
 	err = cfg.db.UpdateVideo(video)
@@ -158,12 +158,12 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// sign the video obj
-	video, err = cfg.dbVideoToSignedVideo(video)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't update video to signed video", err)
-		return
-	}
+	// // sign the video obj
+	// video, err = cfg.dbVideoToSignedVideo(video)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusInternalServerError, "Couldn't update video to signed video", err)
+	// 	return
+	// }
 
 	respondWithJSON(w, http.StatusOK, video)
 }
